@@ -1,0 +1,7 @@
+{
+	"WEB_HOST": "localhost",
+	"WEB_PORT": 8880,
+  	"DB_USER": "postgres",
+  	"DB_PASSWORD": "postgres",
+	"PORT": 5432
+}
