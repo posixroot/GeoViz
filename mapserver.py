@@ -5,11 +5,14 @@ __author__ = "posixroot"
 
 import os
 import tornado
-from map_page_handler import MapPageHandler
+from map_page_handler import CogoHandler
+from main_page_handelr import MainPageHandler
 
 os.path.dirname(os.path.abspath(__file__))
 application = tornado.web.Application([
-    (r"/", MapPageHandler),
+    (r"/", MainPageHandler),
+    (r"/cogomap/", CogoHandler),
+    (r"/censusmap/" CensusHandler),
 ])
 
 
