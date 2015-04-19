@@ -7,12 +7,12 @@
         <center><h2>Geo Viz</h2></center>
         <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js">         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.2/leaflet-dvf.markers.min.js"></script>
-        <div id="map" style="height:720px; position: relative;">
-        </div>
+        <div id="map" style="height:720px; position: relative;"></div>
+        <center><input type="range" class="slider" id="slider" style="position: center; width: 1000px;" /></center>
         
         <script>
             
-            var map = L.map('map').setView([39.9969444, -82.8921667], 9);
+            var map = L.map('map').setView([39.9969444, -82.8921667], 10);
             var tilelayer = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', 
                                         {
                                          maxZoom: 30,
@@ -45,45 +45,40 @@
                     //alert(station_details[index]);
                     var station_coordinates = L.latLng([parseFloat(station_details[index][3]), parseFloat(station_details[index][2])]);
                     
-                    cogoLayers[cogoLayers.length] = new L.MapMarker(station_coordinates,{radius: 7, riseOnHover:true}).bindPopup("Cogo Station: "+station_details[index][1]).addTo(map);
-                    cogoLayers[cogoLayers.length-1].on('mouseover', function(e){this.openPopup();});
+                    cogoLayers[cogoLayers.length] = new L.MapMarker(station_coordinates,{radius: 10, riseOnHover:true, fillColor:'white'}).bindPopup("Cogo Station: "+station_details[index][1]).addTo(map);
+                    cogoLayers[cogoLayers.length-1].on('click', function(e){this.openPopup();});
                 }
                 
                 cogoAvailLayers = [];
                 for(index=0; index<30;index++){
                     var colorValue = parseFloat(station_availability[index][1])/parseFloat(station_availability[index][2]);
                     var radiusValue = 100;
-                    if(station_availability[index][1]!=0)
-                        colorValue = parseInt(colorValue*255);
-                    else
-                        colorValue = 1;
-                    var colorString = 'rgb(0,'+colorValue+',0)';
                     var chartOptions = {
                                 data: {
-                                    'dataPoint1': Math.random() * 20,
-                                    'dataPoint2': Math.random() * 20,
+                                    'bikes': station_availability[index][3],
+                                    'docks': station_availability[index][1],
                                 },
                                 chartOptions: {
-                                    'dataPoint1': {
+                                    'bikes': {
                                         fillColor: '#0000FF',
                                         minValue: 0,
-                                        maxValue: 20,
-                                        maxHeight: 5,
+                                        maxValue: station_availability[index][2],
+                                        maxHeight: 7,
                                         displayText: function (value) {
-                                            return value.toFixed(2);
+                                            return value;//.toFixed(1);
                                         }
                                     },
-                                    'dataPoint2': {
+                                    'docks': {
                                         fillColor: '#00FF00',
                                         minValue: 0,
-                                        maxValue: 20,
-                                        maxHeight: 5,
+                                        maxValue: station_availability[index][2],
+                                        maxHeight: 7,
                                         displayText: function (value) {
-                                            return value.toFixed(2);
+                                            return value;//.toFixed(1);
                                         }
                                     }
                             },
-                            fillOpacity: 10
+                            fillOpacity: 5
                     };
                     cogoAvailLayers[cogoAvailLayers.length] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
                     map.addLayer(cogoAvailLayers[cogoAvailLayers.length-1]);
@@ -128,12 +123,12 @@
                     else
                         colorValue = 1;
                     var colorString = 'rgb('+colorValue+',0,0)';
-                    populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, color:'white', dashArray: 3, weight:1, fillOpacity: 0.5, riseOnHover:true, riseOffset:250}).bindPopup("Total: "+population[index][1]).addTo(map);
-                    populationLayers[populationLayers.length-1].on('mouseover', function(e){this.openPopup();});
+                    
+                    populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, style:style, onEachFeature: onEachFeature}).bindPopup("Total Population(2013): "+population[index][1]).addTo(map);
+                    populationLayers[populationLayers.length-1].on('mouseout', function(e){this.resetStyle(e.target);});
                 }
                 
             }
-            
             
             function getPopulationMapData(callback){
                 var ajax = new XMLHttpRequest();
@@ -142,17 +137,62 @@
                         callback(JSON.parse(ajax.responseText));
                     }
                 }
-                ajax.open('GET', 'censusmap/', true);
+                ajax.open('GET', 'censusmap/', false);
                 ajax.setRequestHeader("Content-Type", "application/json");
                 ajax.send();
             }
-
-            function triggerDataFetch(){
-                count = 1;
-                getCogoMapData(fillCogoMap);
-//                getPopulationMapData(fillPopulationMap);
+            
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                });
             }
+            
+            function style(feature) {
+                return {
+                    weight: 2,
+                    opacity: 1,
+                    color: 'white',
+                    dashArray: '3',
+                    fillOpacity: 0.7
+                };
+            }
+            
+            
+            function highlightFeature(e) {
+                var layer = e.target;
 
+                layer.setStyle({
+                    weight: 5,
+                    color: '#FF0000',
+                    dashArray: '',
+                    fillOpacity: 0.7
+                });
+
+//                if (!L.Browser.ie && !L.Browser.opera) {
+//                    layer.bringToFront();
+//                }
+            }
+            
+            function triggerDataFetch(){
+              
+                getPopulationMapData(fillPopulationMap);
+                getCogoMapData(fillCogoMap);
+                var i;
+                for(i=0; i<cogoLayers.length;i++){
+                    cogoLayers[i].bringToFront();
+                    cogoAvailLayers[i].bringToFront();
+                }
+//                var x = document.getElementById("slider").value;
+                document.getElementById("slider").max = 649;
+                document.getElementById("slider").value = 649;
+            }
+            
+            function sliderListener(){
+                console.log(this.value);
+            }
+            
+            $(".slider").on("input", sliderListener);//function(){console.log(this.value)});
         </script>
     </body>
 </html>
