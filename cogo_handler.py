@@ -38,7 +38,7 @@ class CogoHandler(tornado.web.RequestHandler):
                     cogo_stations.station_id \
                     GROUP BY avail_time, \
                     cogo_station_status.obj_id, lat, lng \
-                    ORDER BY avail_time desc, \
+                    ORDER BY avail_time DESC, \
                     cogo_station_status.station_id;"
 
         station_availability = dbc.fetch_records(db_name, \

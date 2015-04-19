@@ -26,14 +26,16 @@
             var cogoLayers = [];
             var cogoAvailLayers = [];
             var populationLayers = [];
+            var station_availability;
             var cmh_point = L.latLng(39.9969444, -82.8921667);
 
             triggerDataFetch();
+            
 
             function fillCogoMap(mapdatajson){
                 var index;
                 var station_details = mapdatajson["station_details"];
-                var station_availability = mapdatajson["station_availability"];
+                station_availability = mapdatajson["station_availability"];
                 //clear out the cogolayers from map, if any
                 for(index=0; index<cogoLayers.length; index++){
                     if(map.hasLayer(cogoLayers[index]))
@@ -87,6 +89,43 @@
 //                    cogoLayers[index].setPopupContent(popupContent);
                     
                     
+                }
+            }
+            
+            function updateCogo(start_val){
+                var index;
+                cogoAvailLayers = [];
+                for(index=start_val; index<start_val+30;index++){
+                    var colorValue = parseFloat(station_availability[index][1])/parseFloat(station_availability[index][2]);
+                    var chartOptions = {
+                                data: {
+                                    'bikes': station_availability[index][3],
+                                    'docks': station_availability[index][1],
+                                },
+                                chartOptions: {
+                                    'bikes': {
+                                        fillColor: '#0000FF',
+                                        minValue: 0,
+                                        maxValue: station_availability[index][2],
+                                        maxHeight: 7,
+                                        displayText: function (value) {
+                                            return value;//.toFixed(1);
+                                        }
+                                    },
+                                    'docks': {
+                                        fillColor: '#00FF00',
+                                        minValue: 0,
+                                        maxValue: station_availability[index][2],
+                                        maxHeight: 7,
+                                        displayText: function (value) {
+                                            return value;//.toFixed(1);
+                                        }
+                                    }
+                            },
+                            fillOpacity: 5
+                    };
+                    cogoAvailLayers[cogoAvailLayers.length] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
+                    map.addLayer(cogoAvailLayers[cogoAvailLayers.length-1]);
                 }
             }
 
@@ -184,15 +223,28 @@
                     cogoAvailLayers[i].bringToFront();
                 }
 //                var x = document.getElementById("slider").value;
-                document.getElementById("slider").max = 649;
-                document.getElementById("slider").value = 649;
+                document.getElementById("slider").max = 648;
+                document.getElementById("slider").value = 648;
             }
+            
+            function clearCogo(){
+                var i;
+                for(i=0;i<cogoAvailLayers.length;i++){
+                    if(map.hasLayer(cogoAvailLayers[i]))
+                       map.removeLayer(cogoAvailLayers[i]);
+                }
+            }
+            
+            
             
             function sliderListener(){
-                console.log(this.value);
+                var new_val = this.value - 648;
+                new_val *= 30;
+                clearCogo();
+                updateCogo(new_val);
             }
             
-            $(".slider").on("input", sliderListener);//function(){console.log(this.value)});
+            $(".slider").on("change", sliderListener);//function(){console.log(this.value)});
         </script>
     </body>
 </html>
