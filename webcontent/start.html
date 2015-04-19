@@ -6,7 +6,7 @@
     <body>
         <center><h2>Geo Viz</h2></center>
         <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js">         </script>
-        <script src="/home/kiran/Desktop/datateam/GeoViz2/leaflet-dvf-master/dist/leaflet-dvf.markers.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.2/leaflet-dvf.markers.min.js"></script>
         <div id="map" style="height:720px; position: relative;">
         </div>
         
@@ -45,7 +45,7 @@
                     //alert(station_details[index]);
                     var station_coordinates = L.latLng([parseFloat(station_details[index][3]), parseFloat(station_details[index][2])]);
                     
-                    cogoLayers[cogoLayers.length] = L.RadialBarChartMarker(station_coordinates,{riseOnHover:true}).bindPopup("Cogo Station: "+station_details[index][1]).addTo(map);
+                    cogoLayers[cogoLayers.length] = new L.MapMarker(station_coordinates,{radius: 7, riseOnHover:true}).bindPopup("Cogo Station: "+station_details[index][1]).addTo(map);
                     cogoLayers[cogoLayers.length-1].on('mouseover', function(e){this.openPopup();});
                 }
                 
@@ -59,10 +59,34 @@
                         colorValue = 1;
                     var colorString = 'rgb(0,'+colorValue+',0)';
                     var chartOptions = {
-                                data:{
-                                    'bikes': 
-                                }
-                            };
+                                data: {
+                                    'dataPoint1': Math.random() * 20,
+                                    'dataPoint2': Math.random() * 20,
+                                },
+                                chartOptions: {
+                                    'dataPoint1': {
+                                        fillColor: '#0000FF',
+                                        minValue: 0,
+                                        maxValue: 20,
+                                        maxHeight: 5,
+                                        displayText: function (value) {
+                                            return value.toFixed(2);
+                                        }
+                                    },
+                                    'dataPoint2': {
+                                        fillColor: '#00FF00',
+                                        minValue: 0,
+                                        maxValue: 20,
+                                        maxHeight: 5,
+                                        displayText: function (value) {
+                                            return value.toFixed(2);
+                                        }
+                                    }
+                            },
+                            fillOpacity: 10
+                    };
+                    cogoAvailLayers[cogoAvailLayers.length] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
+                    map.addLayer(cogoAvailLayers[cogoAvailLayers.length-1]);
 //                    cogoAvailLayers[cogoAvailLayers.length] = L.circle([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])], radiusValue, {fillColor:colorString, stroke: false, fillOpacity: 0.5}).addTo(map);
 //                    var popupContent = cogoLayers[index].getPopup().getContent()+ "</br>Available Bikes: "+station_availability[index][3]+"</br>Available Docks: "+station_availability[index][1];
 //                    cogoLayers[index].setPopupContent(popupContent);
@@ -126,7 +150,7 @@
             function triggerDataFetch(){
                 count = 1;
                 getCogoMapData(fillCogoMap);
-                getPopulationMapData(fillPopulationMap);
+//                getPopulationMapData(fillPopulationMap);
             }
 
         </script>
