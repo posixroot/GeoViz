@@ -19,7 +19,7 @@ class CogoHandler(tornado.web.RequestHandler):
 
 
         station_details_query = "SELECT station_id, station_name, \
-            lat, lng FROM cogo_stations;"
+            lat, lng FROM cogo_stations ORDER BY station_id;"
 
         station_details = dbc.fetch_records(db_name, \
             station_details_query)
@@ -36,7 +36,8 @@ class CogoHandler(tornado.web.RequestHandler):
                     cogo_station_status INNER JOIN cogo_stations \
                     ON cogo_station_status.station_id = \
                     cogo_stations.station_id \
-                    GROUP BY avail_time, obj_id \
+                    GROUP BY avail_time, \
+                    cogo_station_status.obj_id, lat, lng \
                     ORDER BY avail_time desc, \
                     cogo_station_status.station_id;"
 
