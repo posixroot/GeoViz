@@ -23,7 +23,7 @@
             var popup = L.popup();
             var count;
             var cogoLayers = [];
-            var cogoLayerGroup;
+            var cogoAvailLayers = [];
             var populationLayers = [];
             var cmh_point = L.latLng(39.9969444, -82.8921667);
 
@@ -34,20 +34,35 @@
                 var station_details = mapdatajson["station_details"];
                 var station_availability = mapdatajson["station_availability"];
                 //clear out the cogolayers from map, if any
-//                for(index=0; index<cogoLayers.length; index++){
-//                    if(map.hasLayer(cogoLayers[index]))
-//                        map.removeLayer(cogoLayers[index]);
-//                }
-//                cogoLayers = [];
+                for(index=0; index<cogoLayers.length; index++){
+                    if(map.hasLayer(cogoLayers[index]))
+                        map.removeLayer(cogoLayers[index]);
+                }
+                cogoLayers = [];
+                
                 for(index=0; index<station_details.length; index++) {
                     //alert(station_details[index]);
                     var station_coordinates = L.latLng(parseFloat(station_details[index][3]), parseFloat(station_details[index][2]));
                     cogoLayers[cogoLayers.length] = L.marker(station_coordinates,{riseOnHover:true}).bindPopup(station_details[index][1]).addTo(map);
                     cogoLayers[cogoLayers.length-1].on('mouseover', function(e){this.openPopup();});
-//                    cogoLayerGroup.addLayer(cogoLayers[cogoLayers.length-1]);
-
                 }
-//                cogoLayerGroup.addTo(map);
+                
+                cogoAvailLayers = [];
+                for(index=0; index<station_availability.length;index++){
+                    var colorValue;
+                    var radiusValue = 50;
+                    if(station_availability[index][1]!=0)
+                        colorValue = station_availability[index][1]*255/station_availability[index][2];
+                    else
+                        colorValue = 1;
+                    var colorString = 'rgb(0,'+colorValue+',0)';
+                    if(station_availability[index][3]!=0)
+                        radiusValue *= station_availability[index][3];
+                    else
+                        radiusValue *= 1;
+                    cogoAvailLayers[cogoAvailLayers.length] = L.circle([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])], radiusValue, {fillColor:colorString, stroke: false, fillOpacity: 0.2}).addTo(map);
+                    
+                }
             }
 
             function getCogoMapData(callback){
@@ -69,12 +84,24 @@
             function fillPopulationMap(mapdatajson){
                 var index;
                 var population = mapdatajson["population"];
-                var max_population = mapdatajson["max_population"];
+                var max_population = parseInt(mapdatajson["max_population"]);
                 for(index=0; index<populationLayers.length; index++){
                     if(map.hasLayer(populationLayers[index]))
                         map.removeLayer(populationLayers[index]);
                 }
                 populationLayers = [];
+                
+                for(index=0; index<population.length; index++) {
+                    var colorValue = parseFloat(population[index][1])/parseFloat(max_population);
+                    if(colorValue!=0.0)
+                        colorValue = parseInt(colorValue*255);
+                    else
+                        colorValue = 1;
+                    var colorString = 'rgb('+colorValue+',0,0)';
+                    populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, color:'white', dashArray: 3, weight:1, fillOpacity: 0.5, riseOnHover:true, riseOffset:250}).bindPopup("Total: "+population[index][1]).addTo(map);
+                    populationLayers[populationLayers.length-1].on('mouseover', function(e){this.openPopup();});
+                }
+                
             }
             
             
@@ -92,8 +119,8 @@
 
             function triggerDataFetch(){
                 count = 1;
-                getCogoMapData(fillCogoMap);
-//                getPopulationMapData(fillPopulationMap);
+                //getCogoMapData(fillCogoMap);
+                getPopulationMapData(fillPopulationMap);
             }
 
         </script>
