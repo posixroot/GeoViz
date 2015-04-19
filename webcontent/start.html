@@ -1,3 +1,101 @@
 <html>
-<body> test webpage</body>
+    <head>
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    </head>
+    <body>
+        <center><h2>Geo Viz</h2></center>
+        <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js">         </script>
+        <div id="map" style="height:720px; position: relative;">
+        </div>
+        
+        <script>
+            
+            var map = L.map('map').setView([39.9969444, -82.8921667], 9);
+            var tilelayer = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', 
+                                        {
+                                         maxZoom: 30,
+                                         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a> '
+            });
+            tilelayer.addTo(map);
+            
+            var popup = L.popup();
+            var count;
+            var cogoLayers = [];
+            var cogoLayerGroup;
+            var populationLayers = [];
+            var cmh_point = L.latLng(39.9969444, -82.8921667);
+
+            triggerDataFetch();
+
+            function fillCogoMap(mapdatajson){
+                var index;
+                var station_details = mapdatajson["station_details"];
+                var station_availability = mapdatajson["station_availability"];
+                //clear out the cogolayers from map, if any
+//                for(index=0; index<cogoLayers.length; index++){
+//                    if(map.hasLayer(cogoLayers[index]))
+//                        map.removeLayer(cogoLayers[index]);
+//                }
+//                cogoLayers = [];
+                for(index=0; index<station_details.length; index++) {
+                    //alert(station_details[index]);
+                    var station_coordinates = L.latLng(parseFloat(station_details[index][3]), parseFloat(station_details[index][2]));
+                    cogoLayers[cogoLayers.length] = L.marker(station_coordinates,{riseOnHover:true}).bindPopup(station_details[index][1]).addTo(map);
+                    cogoLayers[cogoLayers.length-1].on('mouseover', function(e){this.openPopup();});
+//                    cogoLayerGroup.addLayer(cogoLayers[cogoLayers.length-1]);
+
+                }
+//                cogoLayerGroup.addTo(map);
+            }
+
+            function getCogoMapData(callback){
+                var ajax = new XMLHttpRequest();
+                ajax.onreadystatechange = function() {
+                    if(ajax.readyState == 4 && ajax.status == 200){
+                        jsondata = JSON.parse(ajax.responseText)
+                        //if (jsondata['cogo'] == 'true')
+                            callback(JSON.parse(ajax.responseText));
+                        
+                    }
+                }
+                ajax.open('GET', 'cogomap/', true);
+                ajax.setRequestHeader("Content-Type", "application/json");
+                ajax.send();
+            }
+            
+            
+            function fillPopulationMap(mapdatajson){
+                var index;
+                var population = mapdatajson["population"];
+                var max_population = mapdatajson["max_population"];
+                for(index=0; index<populationLayers.length; index++){
+                    if(map.hasLayer(populationLayers[index]))
+                        map.removeLayer(populationLayers[index]);
+                }
+                populationLayers = [];
+            }
+            
+            
+            function getPopulationMapData(callback){
+                var ajax = new XMLHttpRequest();
+                ajax.onreadystatechange = function() {
+                    if(ajax.readyState == 4 && ajax.status == 200){
+                        callback(JSON.parse(ajax.responseText));
+                    }
+                }
+                ajax.open('GET', 'censusmap/', true);
+                ajax.setRequestHeader("Content-Type", "application/json");
+                ajax.send();
+            }
+
+            function triggerDataFetch(){
+                count = 1;
+                getCogoMapData(fillCogoMap);
+//                getPopulationMapData(fillPopulationMap);
+            }
+
+        </script>
+    </body>
 </html>

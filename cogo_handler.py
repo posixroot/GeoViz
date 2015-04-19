@@ -24,7 +24,7 @@ class CogoHandler(tornado.web.RequestHandler):
         station_details = dbc.fetch_records(db_name, \
             station_details_query)
 
-        for item in station_details
+        for item in station_details['data']:
             row_list = item.split('*#*')
             result['station_details'].append(row_list)
 
@@ -32,7 +32,8 @@ class CogoHandler(tornado.web.RequestHandler):
         station_availability_query = "SELECT station_id, \
                     available_docks, total_docks, \
                     available_bikes, avail_time FROM \
-                    cogo_station_status;"
+                    cogo_station_status \
+                    ORDER BY avail_time desc limit 30;"
 
         station_availability = dbc.fetch_records(db_name, \
             station_availability_query)
