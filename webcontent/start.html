@@ -7,8 +7,9 @@
         <center><h2>Geo Viz</h2></center>
         <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js">         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.2/leaflet-dvf.markers.min.js"></script>
-        <div id="map" style="height:720px; position: relative;"></div>
+        <div id="map" style="height:800px; position: relative;"></div>
         <center><input type="range" class="slider" id="slider" style="position: center; width: 1000px;" /></center>
+        <center><label id="time-display"></label></center>
         
         <script>
             
@@ -52,7 +53,8 @@
                 }
                 
                 cogoAvailLayers = [];
-                for(index=0; index<30;index++){
+                document.getElementById("time-display").innerHTML = "Time: "+station_availability[1][4];
+                for(index=0; index<30;index++){//30
                     var colorValue = parseFloat(station_availability[index][1])/parseFloat(station_availability[index][2]);
                     var radiusValue = 100;
                     var chartOptions = {
@@ -87,14 +89,15 @@
 //                    cogoAvailLayers[cogoAvailLayers.length] = L.circle([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])], radiusValue, {fillColor:colorString, stroke: false, fillOpacity: 0.5}).addTo(map);
 //                    var popupContent = cogoLayers[index].getPopup().getContent()+ "</br>Available Bikes: "+station_availability[index][3]+"</br>Available Docks: "+station_availability[index][1];
 //                    cogoLayers[index].setPopupContent(popupContent);
-                    
-                    
+                  
                 }
             }
             
             function updateCogo(start_val){
+                console.log("start val: " + start_val);
                 var index;
                 cogoAvailLayers = [];
+                document.getElementById("time-display").innerHTML = "Time: "+station_availability[start_val][4];
                 for(index=start_val; index<start_val+30;index++){
                     var colorValue = parseFloat(station_availability[index][1])/parseFloat(station_availability[index][2]);
                     var chartOptions = {
@@ -238,13 +241,13 @@
             
             
             function sliderListener(){
-                var new_val = this.value - 648;
+                var new_val = 648 - this.value;
                 new_val *= 30;
                 clearCogo();
                 updateCogo(new_val);
             }
             
-            $(".slider").on("change", sliderListener);//function(){console.log(this.value)});
+            $(".slider").on("input", sliderListener);//function(){console.log(this.value)});//change-static//input-dynamic
         </script>
     </body>
 </html>
