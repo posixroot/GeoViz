@@ -96,7 +96,7 @@
             function updateCogo(start_val){
                 console.log("start val: " + start_val);
                 var index;
-                cogoAvailLayers = [];
+                //cogoAvailLayers = [];
                 document.getElementById("time-display").innerHTML = "Time: "+station_availability[start_val][4];
                 for(index=start_val; index<start_val+30;index++){
                     var colorValue = parseFloat(station_availability[index][1])/parseFloat(station_availability[index][2]);
@@ -127,8 +127,18 @@
                             },
                             fillOpacity: 5
                     };
-                    cogoAvailLayers[cogoAvailLayers.length] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
-                    map.addLayer(cogoAvailLayers[cogoAvailLayers.length-1]);
+//                    cogoAvailLayers[cogoAvailLayers.length] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
+//                    map.addLayer(cogoAvailLayers[cogoAvailLayers.length-1]);
+                    cogoAvailLayers[index-start_val] = new L.RadialBarChartMarker([parseFloat(station_availability[index][6]), parseFloat(station_availability[index][5])],chartOptions);
+                    map.addLayer(cogoAvailLayers[index-start_val]);
+                }
+            }
+            
+            function clearCogo(){
+                var i;
+                for(i=0;i<cogoAvailLayers.length;i++){
+                    if(map.hasLayer(cogoAvailLayers[i]))
+                       map.removeLayer(cogoAvailLayers[i]);
                 }
             }
 
@@ -161,10 +171,10 @@
                 for(index=0; index<population.length; index++) {
                     var colorValue = parseFloat(population[index][1])/parseFloat(max_population);
                     if(colorValue!=0.0)
-                        colorValue = parseInt(colorValue*255);
+                        colorValue = 255 - parseInt(colorValue*255);
                     else
-                        colorValue = 1;
-                    var colorString = 'rgb('+colorValue+',0,0)';
+                        colorValue = 255;
+                    var colorString = 'rgb(255,'+colorValue+','+colorValue+')';
                     
                     populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, style:style, onEachFeature: onEachFeature}).bindPopup("Total Population(2013): "+population[index][1]).addTo(map);
                     populationLayers[populationLayers.length-1].on('mouseout', function(e){this.resetStyle(e.target);});
@@ -205,10 +215,10 @@
                 var layer = e.target;
 
                 layer.setStyle({
-                    weight: 5,
+                    weight: 3,
                     color: '#FF0000',
                     dashArray: '',
-                    fillOpacity: 0.7
+                    fillOpacity: 0.9
                 });
 
 //                if (!L.Browser.ie && !L.Browser.opera) {
@@ -229,16 +239,6 @@
                 document.getElementById("slider").max = 648;
                 document.getElementById("slider").value = 648;
             }
-            
-            function clearCogo(){
-                var i;
-                for(i=0;i<cogoAvailLayers.length;i++){
-                    if(map.hasLayer(cogoAvailLayers[i]))
-                       map.removeLayer(cogoAvailLayers[i]);
-                }
-            }
-            
-            
             
             function sliderListener(){
                 var new_val = 648 - this.value;
