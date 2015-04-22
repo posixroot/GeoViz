@@ -8,7 +8,10 @@
         <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js">         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.2/leaflet-dvf.markers.min.js"></script>
         <div id="map" style="height:800px; position: relative;"></div>
-        <center><input type="range" class="slider" id="slider" style="position: center; width: 1000px;" /></center>
+        <center>
+            <input type="range" class="slider" id="slider" />
+        </center>
+<!--        style="position: center; width: 1000px;"-->
         <center><label id="time-display"></label></center>
         
         <script>
@@ -174,9 +177,12 @@
                         colorValue = 255 - parseInt(colorValue*255);
                     else
                         colorValue = 255;
+                    colorValue = colorValue - 100;
+                    if(colorValue<0)
+                        colorValue = 0;
                     var colorString = 'rgb(255,'+colorValue+','+colorValue+')';
                     
-                    populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, style:style, onEachFeature: onEachFeature}).bindPopup("Total Population(2013): "+population[index][1]).addTo(map);
+                    populationLayers[populationLayers.length] = L.geoJson(population[index][2],{fillColor: colorString, style:style, onEachFeature: onEachFeature}).bindPopup("Population Density(2013): "+population[index][1]).addTo(map);
                     populationLayers[populationLayers.length-1].on('mouseout', function(e){this.resetStyle(e.target);});
                 }
                 
@@ -247,7 +253,36 @@
                 updateCogo(new_val);
             }
             
+            function resizeElementHeight(element) {
+              var height = 0;
+              var body = window.document.body;
+              if (window.innerHeight) {
+                  height = window.innerHeight;
+              } else if (body.parentElement.clientHeight) {
+                  height = body.parentElement.clientHeight;
+              } else if (body && body.clientHeight) {
+                  height = body.clientHeight;
+              }
+              element.style.height = ((height - element.offsetTop-100) + "px");
+            }
+            
+            function resizeElementWidth(element) {
+              var width = 0;
+              var body = window.document.body;
+              if (window.innerWidth) {
+                  width = window.innerWidth;
+              } else if (body.parentElement.clientWidth) {
+                  width = body.parentElement.clientWidth;
+              } else if (body && body.clientWidth) {
+                  width = body.clientWidth;
+              }
+              element.style.width = ((width -element.offsetLeft) + "px");
+            }
+            
             $(".slider").on("input", sliderListener);//function(){console.log(this.value)});//change-static//input-dynamic
+            resizeElementHeight(document.getElementById('map'));
+            resizeElementWidth(document.getElementById('slider'));
+            $(window).on('resize', function (e) { resizeElementWidth(document.getElementById('slider'));});
         </script>
     </body>
 </html>

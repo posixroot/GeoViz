@@ -13,7 +13,7 @@ class CensusHandler(tornado.web.RequestHandler):
         dbc = DatabaseController()
         result = {}
 
-        population_query = "SELECT fips, pop2013, \
+        population_query = "SELECT fips, pop13_sqmi, \
             ST_AsGeoJSON(wkb_geometry) FROM \
             censustracts;"
 
@@ -23,8 +23,8 @@ class CensusHandler(tornado.web.RequestHandler):
         result['population'] = []
         for item in population['data']:
             row_list = item.split('*#*')
-            if max_population < int(row_list[1]):
-                max_population = int(row_list[1])
+            if max_population < float(row_list[1]):
+                max_population = float(row_list[1])
             geojson = {}
             geojson['type'] = "Feature"
             geojson['geometry'] = loads(row_list[2])
